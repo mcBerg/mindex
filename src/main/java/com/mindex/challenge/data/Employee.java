@@ -1,16 +1,27 @@
 package com.mindex.challenge.data;
 
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+
+import java.util.ArrayList;
 import java.util.List;
 
+@Document(collection="employee")
 public class Employee {
+    @Id
     private String employeeId;
     private String firstName;
     private String lastName;
     private String position;
     private String department;
-    private List<Employee> directReports;
+    private List<Employee> directReports = new ArrayList<>();
 
     public Employee() {
+    }
+
+    @Override
+    public String toString() {
+        return this.employeeId+": "+this.firstName+" "+this.lastName+" "+this.getDirectReports().size()+" direct reports.";
     }
 
     public String getEmployeeId() {
