@@ -48,7 +48,7 @@ public class CompensationEndpointIntegrationTest {
     @Test
     public void testRead() {
         Compensation compensation = Compensation.builder().employeeId("testId").salary(20.00).effectiveDate(LocalDate.now()).build();
-        Compensation compensation2 = Compensation.builder().employeeId("testId").salary(20.00).effectiveDate(LocalDate.now().minusDays(1)).build();
+        Compensation compensation2 = Compensation.builder().employeeId("testId").salary(21.00).effectiveDate(LocalDate.now().minusDays(1)).build();
 
         restTemplate.postForEntity(compensationUrl, compensation, Compensation.class).getBody();
         restTemplate.postForEntity(compensationUrl, compensation2, Compensation.class).getBody();
