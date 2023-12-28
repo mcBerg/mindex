@@ -20,7 +20,7 @@ public class EmployeeControllerTest {
     //Units test for controller, basic tests to prove the method calls the service.
 
     @Mock
-    private EmployeeService mockEmployeeService = Mockito.mock(EmployeeService.class);
+    private final EmployeeService mockEmployeeService = Mockito.mock(EmployeeService.class);
 
     @InjectMocks
     private EmployeeController employeeController;
@@ -31,8 +31,8 @@ public class EmployeeControllerTest {
 
     @Test
     public void testCreate() {
-        when(mockEmployeeService.create(any(Employee.class))).thenReturn(new Employee());
-        Employee result = employeeController.create(new Employee());
+        when(mockEmployeeService.create(any(Employee.class))).thenReturn(Employee.builder().build());
+        Employee result = employeeController.create(Employee.builder().build());
         verify(mockEmployeeService).create(any(Employee.class));
 
         assertThat(result).isNotNull();
@@ -40,8 +40,7 @@ public class EmployeeControllerTest {
 
     @Test
     public void testReport() {
-        ReportingStructure resultReport = new ReportingStructure();
-        resultReport.setNumberOfReports(11);
+        ReportingStructure resultReport = new ReportingStructure("testId", 11);
         when(mockEmployeeService.getReportingStructure(anyString())).thenReturn(resultReport);
         ReportingStructure result = employeeController.getReportingStructure("testId");
         verify(mockEmployeeService, times(1)).getReportingStructure(anyString());

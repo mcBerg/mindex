@@ -1,32 +1,19 @@
 package com.mindex.challenge.data;
 
-import com.mindex.challenge.service.EmployeeService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.ToString;
 
-@Component
+
+@Getter
+@ToString
+@AllArgsConstructor
+@Builder
 public class ReportingStructure {
 
-    Employee employee;
+    String employeeId;
     Integer numberOfReports;
 
-    public ReportingStructure() {
 
-    }
-
-    public Employee getEmployee() {
-        return employee;
-    }
-
-    public void setEmployee(Employee employee) {
-        this.employee = employee;
-    }
-
-    public Integer getNumberOfReports() {
-        return numberOfReports;
-    }
-
-    public void setNumberOfReports(Integer numberOfReports) {
-        this.numberOfReports = numberOfReports;
-    }
 }

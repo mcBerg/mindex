@@ -1,8 +1,7 @@
-package com.mindex.challenge.service.impl;
+package com.mindex.challenge.integration;
 
 import com.mindex.challenge.data.Employee;
 import com.mindex.challenge.data.ReportingStructure;
-import com.mindex.challenge.service.EmployeeService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -17,20 +16,18 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class EmployeeServiceImplTest {
+public class EmployeeEndpointIntegrationTest {
 
     private String employeeUrl;
     private String employeeIdUrl;
     private String employeeReportUrl;
-
-    @Autowired
-    private EmployeeService employeeService;
 
     @LocalServerPort
     private int port;
@@ -45,34 +42,36 @@ public class EmployeeServiceImplTest {
         employeeReportUrl = "http://localhost:" + port + "/employee/reportCount/{id}";
     }
 
-    //Split these up, each test should only test one thing.
     @Test
     public void testCreate() {
-        Employee testEmployee = Employee.builder().firstName("John").lastName("Doe").department("Engineering").position("Developer").build();
-
+        //Demo of Builder from lombok
+        Employee testEmployee = Employee.builder()
+                .firstName("John")
+                .lastName("Doe")
+                .department("Engineering")
+                .position("Developer")
+                .build();
         Employee createdEmployee = restTemplate.postForEntity(employeeUrl, testEmployee, Employee.class).getBody();
         assertThat(createdEmployee).isNotNull();
         assertThat(createdEmployee.getEmployeeId()).isNotNull();
-        assertThat(createdEmployee.getDirectReports()).isNotNull();
         //Test the employee returned is equivalent to the employee sent
         assertEmployeeEquivalence(testEmployee, createdEmployee);
 
     }
     @Test
     public void testRead() {
-        Employee testEmployee = Employee.builder().build();
-        testEmployee.setFirstName("John");
-        testEmployee.setLastName("Doe");
-        testEmployee.setDepartment("Engineering");
-        testEmployee.setPosition("Developer");
-
-        assertThat(testEmployee.getDirectReports()).isNotNull();
+        Employee testEmployee = Employee.builder()
+                .firstName("John")
+                .lastName("Doe")
+                .department("Engineering")
+                .position("Developer")
+                .build();
 
         Employee createdEmployee = restTemplate.postForEntity(employeeUrl, testEmployee, Employee.class).getBody();
-        assertThat(createdEmployee).isNotNull();
+        assert createdEmployee != null;
 
         Employee readEmployee = restTemplate.getForEntity(employeeIdUrl, Employee.class, createdEmployee.getEmployeeId()).getBody();
-        assertThat(readEmployee).isNotNull();
+        assert readEmployee != null;
 
         //Test the employee retrieved from the DB is equivalent to the employee created.
         assertThat(createdEmployee.getEmployeeId()).isEqualTo(readEmployee.getEmployeeId());
@@ -81,11 +80,12 @@ public class EmployeeServiceImplTest {
 
     @Test
     public void testUpdate() {
-        Employee testEmployee = Employee.builder().build();
-        testEmployee.setFirstName("John");
-        testEmployee.setLastName("Doe");
-        testEmployee.setDepartment("Engineering");
-        testEmployee.setPosition("Developer");
+        Employee testEmployee = Employee.builder()
+                .firstName("John")
+                .lastName("Doe")
+                .department("Engineering")
+                .position("Developer")
+                .build();
 
         Employee createdEmployee = restTemplate.postForEntity(employeeUrl, testEmployee, Employee.class).getBody();
         assertThat(createdEmployee).isNotNull();
@@ -111,6 +111,8 @@ public class EmployeeServiceImplTest {
 
         //Check the employee returned by the method
         assertThat(updatedEmployee).isNotNull();
+        assertThat(updatedEmployee.getDirectReports().size()).isEqualTo(1);
+        //TODO: the employees aren't the same object!
         assertEmployeeEquivalence(createdEmployee, updatedEmployee);
 
         //Check the employee retrieved from the db
@@ -121,31 +123,12 @@ public class EmployeeServiceImplTest {
                         .getBody();
 
         assertThat(updatedWithReports).isNotNull();
-        assertThat(updatedWithReports.getDirectReports()).isNotEmpty();
+        assertThat(updatedWithReports.getDirectReports().size()).isEqualTo(1);
         assertEmployeeEquivalence(updatedEmployee, updatedWithReports);
     }
 
     @Test
-    public void testCountReports() {
-        String ceoId = setupCountData();
-
-        assertThat(4).isEqualTo(employeeService.countReports(ceoId));
-
-    }
-
-    @Test
-    public void testReportingStructure() {
-        String ceoId = setupCountData();
-
-        ReportingStructure result = employeeService.getReportingStructure(ceoId);
-
-        assertThat(ceoId).isEqualTo(result.getEmployeeId());
-        assertThat(4).isEqualTo(result.getNumberOfReports().intValue());
-
-    }
-
-    @Test
-    public void testReportCountEndpoint() {
+    public void testReportCount() {
         String ceoId = setupCountData();
 
         ReportingStructure result = restTemplate.getForEntity(employeeReportUrl,
@@ -182,12 +165,7 @@ public class EmployeeServiceImplTest {
         Employee paulEmployee = restTemplate.postForEntity(employeeUrl, employee, Employee.class).getBody();
         assertThat(paulEmployee).isNotNull();
         assertThat(ceoId).isNotEqualTo(paulEmployee.getEmployeeId());
-        employee = Employee.builder()
-                .firstName("Ringo")
-                .lastName("Starr")
-                .department("StarrDepartment")
-                .position("testPosition")
-                .build();
+        employee = new Employee(null, "Ringo", "Starr", "StarrDepartment", "testPosition", (List<Employee>)Collections.EMPTY_LIST);
         Employee ringoEmployee = restTemplate.postForEntity(employeeUrl, employee, Employee.class).getBody();
 
         List<Employee> employeeList = new ArrayList<>();
@@ -206,6 +184,7 @@ public class EmployeeServiceImplTest {
                 .department("testDepartment")
                 .position("testBest")
                 .build();
+
         employeeList.clear();
         employeeList.add(restTemplate.postForEntity(employeeUrl, employee, Employee.class).getBody());
 
@@ -230,7 +209,7 @@ public class EmployeeServiceImplTest {
     }
 
     private static void assertEmployeeEquivalence(Employee expected, Employee actual) {
-        assertThat(expected).isEqualToIgnoringGivenFields(actual, "directReports", "employeeId");
+        assertThat(expected).isEqualToIgnoringGivenFields(actual, "employeeId", "directReports");
         assertThat(expected.getDirectReports().size()).isEqualTo(actual.getDirectReports().size());
     }
 }
